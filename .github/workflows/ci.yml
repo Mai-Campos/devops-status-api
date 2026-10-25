@@ -66,3 +66,6 @@ jobs:
 
       - name: Analizar código con Lint
         run: pnpm run lint
+
+      - name: Construir imagen Docker
+        run: docker build -t devops-status-api .
