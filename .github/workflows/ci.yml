@@ -26,3 +26,5 @@ jobs:
 
       - name: Compilar la API
         run: pnpm run build
+
+      - name: Ejecutar pruebas
