@@ -19,7 +19,7 @@ jobs:
       - name: Configurar pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.11.0
+          version: 12.8.1
 
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
