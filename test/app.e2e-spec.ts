@@ -16,11 +16,32 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/checks (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/checks')
       .expect(200)
-      .expect('Hello World!');
+      .expect((response) => {
+        if (!Array.isArray(response.body)) {
+          throw new Error('La respuesta debe ser un array');
+        }
+      });
+  });
+
+  it('/checks (POST)', async () => {
+    const newCheck = {
+      service: 'integration-test',
+      status: 'UP',
+      responseTimeMs: 120,
+    };
+
+    const response = await request(app.getHttpServer())
+      .post('/checks')
+      .send(newCheck)
+      .expect(201);
+
+    expect(response.body).toMatchObject(newCheck);
+    expect(response.body.id).toBeDefined();
+    expect(response.body.createdAt).toBeDefined();
   });
 
   afterEach(async () => {

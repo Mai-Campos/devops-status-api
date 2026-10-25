@@ -8,6 +8,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     steps:
       - name: Obtener el código
         uses: actions/checkout@v4
@@ -25,11 +40,29 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
+      - name: Crear esquema de pruebas
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGDATABASE: ${{ secrets.TEST_DB_NAME }}
+          PGUSER: ${{ secrets.TEST_DB_USER }}
+          PGPASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        run: psql -v  ON_ERROR_STOP=1 -f test/init.sql
+
       - name: Compilar la API
         run: pnpm run build
 
       - name: Ejecutar pruebas
         run: pnpm run test
+
+      - name: Ejecutar pruebas e2e
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGDATABASE: ${{ secrets.TEST_DB_NAME }}
+          PGUSER: ${{ secrets.TEST_DB_USER }}
+          PGPASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        run: pnpm run test:e2e
 
       - name: Analizar código con Lint
         run: pnpm run lint
