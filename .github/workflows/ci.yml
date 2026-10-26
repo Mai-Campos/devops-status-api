@@ -8,6 +8,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     services:
       postgres:
         image: postgres:17-alpine
@@ -67,5 +71,18 @@ jobs:
       - name: Analizar código con Lint
         run: pnpm run lint
 
-      - name: Construir imagen Docker
-        run: docker build -t devops-status-api .
+      - name: Iniciar Sesión en GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Construir y publicar imagen Docker
+        uses: docker/build-push-actions@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/mai-campos/devops-status-api:latest
+            ghcr.io/mai-campos/devops-status-api:${{github.sha}}
