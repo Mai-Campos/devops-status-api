@@ -79,7 +79,7 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
 
       - name: Construir y publicar imagen Docker
-        uses: docker/build-push-actions@v6
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
